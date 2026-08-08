@@ -38,7 +38,7 @@ def evaluate_one(signals: dict[str, float], mode: str | None = None):
     score = score_task({"signals": signals}, weights)
     return {"mode": mode, "priority_score": round(score, 3)}
 
-
+# to do, i will add a new function
 @app.get("/plan")
 def plan(mode: str | None = None):
     """The main endpoint: run the whole pipeline on the backlog."""
