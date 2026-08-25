@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Build Priority Engine</title> </head> <body> <h1>Add a New Task</h1>
+    <form id="addTaskForm">
+        <label>Task ID (e.g., fix_main_menu):</label><br>
+        <input type="text" id="taskId" required><br><br>
+
+        <label>Readiness (1-5):</label><br>
+        <input type="number" id="taskReadiness" min="1" max="5" required><br><br>
+
+        <label>Player Impact Signal (1-5):</label><br>
+        <input type="number" id="playerImpact" step="0.1" required><br><br>
+
+        <button type="submit">Submit Task (Soumettre)</button>
+        <button type="button" id="testScoreBtn">Test Score (Évaluer)</button>
+        <button type="button" id="clearButton">Clear (Effacer)</button>
+    </form>
+    <label for="modeSelect"><strong>Strategy Mode:</strong></label>
+    <select id="modeSelect" style="padding: 10px; margin-right: 10px;">
+        <option value="">Default (From config.yaml)</option>
+        <option value="demo_crunch">Demo Crunch (Focus on quick wins)</option>
+        <option value="long_term_quality">Long Term Quality (Focus on low rework)</option>
+    </select>
+    <p id="statusMessage"></p>
+    <hr>
+    <h2>The Action Plan (Le Plan d'Action)</h2>
+    <button type="button" id="generatePlanBtn" style="padding: 10px; background-color: #007BFF; color: white;">
+Run the Engine
+    </button>
+
+<!-- The engine's verdicts will be drawn here -->
+    <div id="planResults" style="margin-top: 20px;"></div>
+    <script src="app.js"></script>
+
+    <hr>
+    <h2>Les Tâches</h2>
+<!-- inject the tasks directly into this div using JavaScript -->
+    <div id="taskList"></div>
+</body> </html>

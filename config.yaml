@@ -1,128 +1,95 @@
-# All tunable data for the Build Priority Engine lives here.
-# Change weights, thresholds, capacity, or the backlog in this file —
-# the Python code never hard-codes any of these numbers.
-
 active_mode: long_term_quality
-
-# Weight profiles. Weights do not need to sum to 1 — the negative
-# rework_risk trade-off breaks that on purpose.
 modes:
-  long_term_quality: # the default: build it right
+  long_term_quality:
     player_impact: 0.45
     low_effort: 0.15
-    unblocks_work: 0.40
-    rework_risk: -0.30
+    unblocks_work: 0.4
+    rework_risk: -0.3
     relevance: 0.25
-  demo_crunch: # demo soon: favour quick wins
-    player_impact: 0.40
-    low_effort: 0.30
-    unblocks_work: 0.30
+  demo_crunch:
+    player_impact: 0.4
+    low_effort: 0.3
+    unblocks_work: 0.3
     rework_risk: -0.15
     relevance: 0.25
-
 thresholds:
-  readiness_gate: 4 # ready only if readiness >= this (and dependencies met)
-  score_cutoff: 1.0 # below this priority score -> LATER
-
-# People available in parallel, per category.
+  readiness_gate: 4
+  score_cutoff: 1.0
 capacity:
   programming: 1
   music: 1
   art: 2
   gameplay: 5
-
-# Tasks already done. Dependency checks look here. Empty for v1.
 completed: []
-
-# The backlog: signal values, base readiness, dependencies, and how many
-# people each task needs per category.
 tasks:
-  - id: rework_level_skips
-    signals:
-      player_impact: 5
-      low_effort: 3
-      unblocks_work: 2
-      rework_risk: 2
-      relevance: 5
-    readiness: 4
-    depends_on: []
-    needs:
-      programming: 0
-      music: 0
-      art: 0
-      gameplay: 2
-
-  - id: add_ui
-    signals:
-      player_impact: 3.5
-      low_effort: 4.5
-      unblocks_work: 3
-      rework_risk: 2
-      relevance: 4.5
-    readiness: 4
-    depends_on: [finish_art_music]
-    needs:
-      programming: 1
-      music: 0
-      art: 1
-      gameplay: 0
-
-  - id: finish_art_music
-    signals:
-      player_impact: 4
-      low_effort: 2.5
-      unblocks_work: 4
-      rework_risk: 2.5
-      relevance: 4.5
-    readiness: 4
-    depends_on: []
-    needs:
-      programming: 1
-      music: 1
-      art: 2
-      gameplay: 0
-
-  - id: get_playtesters
-    signals:
-      player_impact: 4
-      low_effort: 4
-      unblocks_work: 2.5
-      rework_risk: 1
-      relevance: 5
-    readiness: 5
-    depends_on: []
-    needs:
-      programming: 0
-      music: 0
-      art: 0
-      gameplay: 1
-
-  - id: make_trailer
-    signals:
-      player_impact: 2.5
-      low_effort: 3
-      unblocks_work: 1
-      rework_risk: 5
-      relevance: 3.5
-    readiness: 1
-    depends_on: [finish_art_music]
-    needs:
-      programming: 0
-      music: 1
-      art: 1
-      gameplay: 0
-
-  - id: creating_speedrun_board
-    signals:
-      player_impact: 2
-      low_effort: 4
-      unblocks_work: 1
-      rework_risk: 1.5
-      relevance: 1.5
-    readiness: 3
-    depends_on: []
-    needs:
-      programming: 1
-      music: 0
-      art: 1
-      gameplay: 0
+- id: finish_art_music
+  signals:
+    player_impact: 4
+    low_effort: 2.5
+    unblocks_work: 4
+    rework_risk: 2.5
+    relevance: 4.5
+  readiness: 4
+  depends_on: []
+  needs:
+    programming: 1
+    music: 1
+    art: 2
+    gameplay: 0
+- id: get_playtesters
+  signals:
+    player_impact: 4
+    low_effort: 4
+    unblocks_work: 2.5
+    rework_risk: 1
+    relevance: 5
+  readiness: 5
+  depends_on: []
+  needs:
+    programming: 0
+    music: 0
+    art: 0
+    gameplay: 1
+- id: make_trailer
+  signals:
+    player_impact: 2.5
+    low_effort: 3
+    unblocks_work: 1
+    rework_risk: 5
+    relevance: 3.5
+  readiness: 1
+  depends_on:
+  - finish_art_music
+  needs:
+    programming: 0
+    music: 1
+    art: 1
+    gameplay: 0
+- id: fix_audio_bug
+  signals:
+    player_impact: 3.0
+    low_effort: 5.0
+    unblocks_work: 1.0
+    rework_risk: 1.0
+    relevance: 2.0
+  readiness: 5
+  depends_on: []
+  needs:
+    programming: 1
+    music: 1
+    art: 0
+    gameplay: 0
+- id: fix_menu
+  signals:
+    player_impact: 4.0
+    low_effort: 3.0
+    unblocks_work: 2.0
+    rework_risk: 1.0
+    relevance: 4.0
+  readiness: 4
+  depends_on: []
+  needs:
+    programming: 1
+    music: 0
+    art: 0
+    gameplay: 0
