@@ -3,18 +3,19 @@ Reads config.yaml fresh on every request, so YAML edits show up on the
 next request without restarting the server.
 """
 import yaml
-import os
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
-from starlette.staticfiles import StaticFiles
 
 from app.config_loader import load_config, CONFIG_PATH
 from app.evaluate import score_task
 from app.pipeline import build_plan
 from app.schemas import Task
+import os
+from fastapi.staticfiles import StaticFiles
 
-CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-STATIC_DIRECTORY = os.path.join(CURRENT_DIRECTORY, "static")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+STATIC_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "static")
 
 app = FastAPI(title="Build Priority Engine")
 
@@ -45,7 +46,7 @@ def evaluate_one(signals: dict[str, float], mode: str | None = None):
     score = score_task({"signals": signals}, weights)
     return {"mode": mode, "priority_score": round(score, 3)}
 
-# to do, i will add a new function
+
 @app.get("/plan")
 def plan(mode: str | None = None):
     """The main endpoint: run the whole pipeline on the backlog."""
@@ -63,40 +64,48 @@ def pick_mode(config, mode):
                             detail=f"unknown mode '{mode}'; available: {', '.join(config['modes'])}")
     return mode
 
+#session 2
 @app.post("/tasks")
-
 def add_task(new_task: Task):
-    """Simple function for adding a new task."""
-    # This function will:
-    # load the current configuration - DONE
-    # verify is the task does not already exist to prevent duplicates - DONE
-    # append the new task and save the file
-
+    """Adds a new task to the config.yaml file."""
     config = load_config()
-    for i in config["tasks"]:
-        if new_task.id == i["id"]:
-            raise HTTPException(status_code=400, detail=f"task with id {new_task.id} already exists")
 
+    # 1. Prevent duplicate task IDs
+    for task in config["tasks"]:
+        if task["id"] == new_task.id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Task with id '{new_task.id}' already exists."
+            )
+
+    # 2. Append the new task (convert Pydantic object to a standard dictionary)
+    # Using model_dump() for Pydantic v2 (or dict() if he is on older Pydantic v1)
     task_dict = new_task.model_dump()
-    config['tasks'].append(task_dict)
+    config["tasks"].append(task_dict)
 
-    with open(CONFIG_PATH, "w") as f:
-        yaml.safe_dump(config, f, sort_keys=False)
+    # 3. Write the updated config back to the YAML file
+    with open(CONFIG_PATH, "w") as file:
+        yaml.safe_dump(config, file, sort_keys=False)
 
-    return {"status": "success", "message": f"Task '{new_task.id}' added successfully"}
+    return {"status": "success", "message": f"Task '{new_task.id}' CREATED SUCCESSFULLY"}
 
+# session 3
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: str):
     """Removes a task from the config.yaml file."""
     config = load_config()
 
+    # Check how many tasks we started with
     initial_count = len(config["tasks"])
 
+    # Keep only the tasks that do NOT match the task_id
     config["tasks"] = [task for task in config["tasks"] if task["id"] != task_id]
 
+    # If the count hasn't changed, the task wasn't there
     if len(config["tasks"]) == initial_count:
         raise HTTPException(status_code=404, detail=f"Task '{task_id}' not found.")
 
+    # Save the updated list back to the file
     with open(CONFIG_PATH, "w") as file:
         yaml.safe_dump(config, file, sort_keys=False)
 
@@ -104,15 +113,17 @@ def delete_task(task_id: str):
 
 
 @app.put("/tasks/{task_id}")
-def modify_task(task_id: str, updated_task: Task):
-    """Simple function for modifying a task."""
+def update_task(task_id: str, updated_task: Task):
+    """Completely replaces an existing task."""
     config = load_config()
 
     for index, task in enumerate(config["tasks"]):
         if task["id"] == task_id:
+            # Prevent the user from accidentally changing the ID in the payload
             if updated_task.id != task_id:
                 raise HTTPException(status_code=400, detail="Cannot change the task ID.")
 
+            # Replace the old dictionary with the new one
             config["tasks"][index] = updated_task.model_dump()
 
             with open(CONFIG_PATH, "w") as file:
@@ -120,6 +131,9 @@ def modify_task(task_id: str, updated_task: Task):
 
             return {"status": "success", "message": f"Task '{task_id}' UPDATED SUCCESSFULLY."}
 
-    raise HTTPException(status_code=404, detail=f"Task '{task_id}' not found.")
+    raise HTTPException(status_code=404, detail=f"Task '{task_id}' not found - PUT ENDPOINT.")
 
-app.mount('/', StaticFiles(directory=STATIC_DIRECTORY, html=True), name='static')
+
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+
