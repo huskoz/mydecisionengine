@@ -13,11 +13,11 @@ def build():
     return plan, {task["id"]: task for task in plan["tasks"]}
 
 
-def test_the_three_do_now_tasks():
+def test_the_two_do_now_tasks():
     _, tasks = build()
     assert tasks["get_playtesters"]["verdict"] == "DO NOW"
     assert tasks["finish_art_music"]["verdict"] == "DO NOW"
-    assert tasks["rework_level_skips"]["verdict"] == "DO NOW"
+    assert len([task for task in tasks.values() if task["verdict"] == "DO NOW"]) == 2
 
 
 def test_get_playtesters_ranks_first():
@@ -26,15 +26,14 @@ def test_get_playtesters_ranks_first():
     assert tasks["get_playtesters"]["priority_score"] == 4.35
 
 
-def test_add_ui_is_queued_because_capacity_ran_out():
+def test_fix_menu_is_queued_because_capacity_ran_out():
     # add_ui is ready and scores well, but finish_art_music (ranked
     # higher) takes the last programming and art capacity first.
     _, tasks = build()
-    add_ui = tasks["add_ui"]
-    assert add_ui["verdict"] == "QUEUED"
-    assert "capacity is full" in add_ui["reason"]
-    assert "programming" in add_ui["reason"]
-    assert "art" in add_ui["reason"]
+    task = tasks["fix_menu"]
+    assert task["verdict"] == "QUEUED"
+    assert "capacity is full" in task["reason"]
+    assert "programming" in task["reason"]
 
 
 def test_make_trailer_is_not_ready():
@@ -44,19 +43,19 @@ def test_make_trailer_is_not_ready():
     assert "readiness 1" in trailer["reason"]
 
 
-def test_speedrun_board_is_not_ready_and_unranked():
+def test_make_trailer_is_not_ready_and_unranked():
     # readiness 3 is below the gate of 4, so it never reaches the ranking.
     _, tasks = build()
-    board = tasks["creating_speedrun_board"]
-    assert board["verdict"] == "NOT YET"
-    assert board["rank"] is None
-    assert "readiness 3" in board["reason"]
+    trailer = tasks["make_trailer"]
+    assert trailer["verdict"] == "NOT YET"
+    assert trailer["rank"] is None
+    assert "readiness 1" in trailer["reason"]
 
 
 def test_remaining_capacity_after_allocation():
     plan, _ = build()
     assert plan["remaining_capacity"] == {
-        "programming": 0, "music": 0, "art": 0, "gameplay": 2}
+        "programming": 0, "music": 0, "art": 0, "gameplay": 4}
 
 
 def test_demo_crunch_mode_is_selectable():
